@@ -800,7 +800,7 @@ textarea { resize: vertical; min-height: 80px; }
 
 <script>
 // ====== CONFIG ======
-let API_BASE = localStorage.getItem('api_url') || 'https://viralxbackend.onrender.com';
+let API_BASE = localStorage.getItem('api_url') || 'http://viralxbackend.onrender.com';
 let AUTH_TOKEN = localStorage.getItem('admin_token') || '';
 let currentEditId = null;
 let allPostsData = [];
@@ -948,7 +948,7 @@ async function loadDashboard() {
     }
     tbody.innerHTML = recent.map(p => `
       <tr>
-        <td><img class="post-thumb-small" src="${API_BASE}/uploads/${p.thumbnail}" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22><rect fill=%22%23333%22 width=%2256%22 height=%2240%22/></svg>'"></td>
+        <td><img class="post-thumb-small" src="${p.thumbnail}" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22><rect fill=%22%23333%22 width=%2256%22 height=%2240%22/></svg>'"></td>
         <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${p.title}</td>
         <td>${sectionTag(p.section)}</td>
         <td>${p.views || 0}</td>
@@ -981,7 +981,7 @@ function renderPostsTable(posts) {
   }
   tbody.innerHTML = posts.map(p => `
     <tr>
-      <td><img class="post-thumb-small" src="${API_BASE}/uploads/${p.thumbnail}" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22><rect fill=%22%23333%22 width=%2256%22 height=%2240%22/></svg>'"></td>
+      <td><img class="post-thumb-small" src="${p.thumbnail}" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22><rect fill=%22%23333%22 width=%2256%22 height=%2240%22/></svg>'"></td>
       <td style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${p.title}</td>
       <td>${sectionTag(p.section)}</td>
       <td style="max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">
@@ -1029,10 +1029,12 @@ async function submitPost() {
 
   try {
     let thumbnail = document.getElementById('uploadedFilename').value;
+    let publicId = '';
 
     if (file) {
       const uploadRes = await uploadFile(file);
-      thumbnail = uploadRes.filename;
+      thumbnail = uploadRes.url;       // Cloudinary full URL (permanent)
+      publicId  = uploadRes.publicId;  // for deletion later
     }
 
     if (!thumbnail) {
@@ -1041,7 +1043,7 @@ async function submitPost() {
       return showToast('থাম্বনেইল আপলোড করুন', true);
     }
 
-    const postData = { title, thumbnail, link, section, badge, isPremium, isNew, isActive, order };
+    const postData = { title, thumbnail, publicId, link, section, badge, isPremium, isNew, isActive, order };
     await api('/api/admin/posts', 'POST', postData);
     showToast('পোস্ট সফলভাবে যোগ হয়েছে ✅');
     resetForm();
@@ -1100,10 +1102,12 @@ async function saveEdit() {
 
   try {
     let thumbnail = null;
+    let publicId = null;
     const file = document.getElementById('editThumbnailFile').files[0];
     if (file) {
       const uploadRes = await uploadFile(file);
-      thumbnail = uploadRes.filename;
+      thumbnail = uploadRes.url;       // Cloudinary full URL
+      publicId  = uploadRes.publicId;
     }
 
     const updateData = {
@@ -1115,7 +1119,7 @@ async function saveEdit() {
       isNew: document.getElementById('editToggleNew').classList.contains('on'),
       isActive: document.getElementById('editToggleActive').classList.contains('on'),
     };
-    if (thumbnail) updateData.thumbnail = thumbnail;
+    if (thumbnail) { updateData.thumbnail = thumbnail; updateData.publicId = publicId; }
 
     await api(`/api/admin/posts/${currentEditId}`, 'PUT', updateData);
     closeModal();
@@ -1219,4 +1223,4 @@ uploadArea?.addEventListener('drop', (e) => {
 });
 </script>
 </body>
-                    </html>
+</html>
