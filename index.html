@@ -41,8 +41,8 @@ body {
   transition: transform 0.3s;
 }
 .sidebar-logo {
-  padding: 24px 20px;
-  border-bottom: 1px solid var(--border);
+  padding: 12px 20px 0 20px;
+  border-bottom: none;
 }
 .sidebar-logo h2 {
   font-size: 15px;
@@ -57,7 +57,7 @@ body {
 }
 .sidebar-nav {
   flex: 1;
-  padding: 0;
+  padding: 4px 0 0 0;
 }
 .nav-link {
   display: flex;
@@ -458,7 +458,7 @@ textarea { resize: vertical; min-height: 80px; }
 
 <!-- SIDEBAR -->
 <nav class="sidebar" id="sidebar">
-  <div class="sidebar-logo">
+  <div class="sidebar-logo" style="display:none;">
     <h2>🎬 Bd Viral Admin</h2>
     <p>Content Management</p>
   </div>
