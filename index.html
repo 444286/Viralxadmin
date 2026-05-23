@@ -699,6 +699,27 @@ textarea { resize: vertical; min-height: 80px; }
       </div>
 
       <div class="panel-card" style="max-width:500px;margin-top:20px;">
+        <div class="panel-header">
+          <h3>👤 Username পরিবর্তন</h3>
+        </div>
+        <div class="panel-body">
+          <div style="display:flex;flex-direction:column;gap:14px;">
+            <div class="form-group">
+              <label>নতুন Username</label>
+              <input type="text" id="newUsername" placeholder="নতুন username লিখুন">
+            </div>
+            <div class="form-group">
+              <label>বর্তমান পাসওয়ার্ড (নিশ্চিত করতে)</label>
+              <input type="password" id="usernameConfirmPwd" placeholder="••••••••">
+            </div>
+            <button class="btn btn-primary" onclick="changeUsername()" style="width:fit-content;">
+              💾 Username আপডেট করুন
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel-card" style="max-width:500px;margin-top:20px;">
         <div class="panel-header"><h3>⚙️ API কনফিগ</h3></div>
         <div class="panel-body">
           <div class="form-group">
@@ -800,7 +821,7 @@ textarea { resize: vertical; min-height: 80px; }
 
 <script>
 // ====== CONFIG ======
-let API_BASE = localStorage.getItem('api_url') || 'https://viralxbackend.onrender.com';
+let API_BASE = localStorage.getItem('api_url') || 'http://localhost:5000';
 let AUTH_TOKEN = localStorage.getItem('admin_token') || '';
 let currentEditId = null;
 let allPostsData = [];
@@ -1168,6 +1189,23 @@ async function changePassword() {
   } catch (e) {
     showToast('ব্যর্থ: ' + e.message, true);
   }
+}
+
+async function changeUsername() {
+  const newUsername = document.getElementById('newUsername').value.trim();
+  const currentPassword = document.getElementById('usernameConfirmPwd').value;
+  if (!newUsername) return showToast('নতুন username দিন', true);
+  if (newUsername.length < 3) return showToast('Username কমপক্ষে ৩ অক্ষর হতে হবে', true);
+  if (!currentPassword) return showToast('পাসওয়ার্ড দিন', true);
+  try {
+    const res = await api('/api/admin/username', 'PUT', { newUsername, currentPassword });
+    localStorage.setItem('admin_user', res.username);
+    document.getElementById('loggedUser').textContent = res.username;
+    document.getElementById('avatarLetter').textContent = res.username[0].toUpperCase();
+    showToast('Username আপডেট হয়েছে ✅');
+    document.getElementById('newUsername').value = '';
+    document.getElementById('usernameConfirmPwd').value = '';
+  } catch (e) { showToast('ব্যর্থ: ' + e.message, true); }
 }
 
 function saveApiUrl() {
